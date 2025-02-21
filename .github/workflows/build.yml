@@ -11,10 +11,8 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
-
         steps:
-        - name: Publish artifacts and release
-          uses: houseabsolute/actions-rust-release@v0
-          with:
-              executable-name: group-organizer-app
-              target:  x86_64-pc-windows-msvc
+          - uses: actions/checkout@v4
+          - uses: actions-rust-lang/setup-rust-toolchain@v1
+          - run: rustup add target x86_64-pc-windows-msvc
+          - run: cargo build --release --target x86_64-pc-windows-msvc
