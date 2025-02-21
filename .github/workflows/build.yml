@@ -1,0 +1,20 @@
+name: Build
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Publish artifacts and release
+          uses: houseabsolute/actions-rust-release@v0
+          with:
+              executable-name: group-organizer-app
+              target:  x86_64-pc-windows-msvc

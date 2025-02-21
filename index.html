@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Group Organizer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            background-color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label,
+        textarea,
+        button,
+        table,
+        th,
+        input,
+        h2,
+        h3,
+        span,
+        p {
+            margin: 0.5em;
+            /* background-color: grey; */
+            color: white;
+        }
+
+        td,
+        input {
+            padding: 0.5em;
+            background-color: #444;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1em;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-self: center;
+        }
+
+        .container-item {
+            flex: auto;
+        }
+
+        .seventyfiveflex {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 0 0 75%;
+        }
+
+        h1 {
+            font-size: 3em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="container">
+        <div class="container-item">
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <h1 id="title-text" style="margin-right: 10px;">Group Organizer</h1>
+                <div id="spinner" style="display: none;">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" stroke="white" stroke-width="5" fill="none"
+                            stroke-linecap="round">
+                            <animate attributeName="stroke-dasharray" values="1,200;89,200;89,200" keyTimes="0;0.5;1"
+                                dur="1.5s" repeatCount="indefinite" />
+                            <animate attributeName="stroke-dashoffset" values="0;-35;-124" keyTimes="0;0.5;1" dur="1.5s"
+                                repeatCount="indefinite" />
+                            <animate attributeName="stroke" values="#ffffff;#cccccc;#ffffff" keyTimes="0;0.5;1"
+                                dur="1.5s" repeatCount="indefinite" />
+                        </circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="container-item">
+            <br><br>
+            <h4>Version: <span id="version">Loading...</span></h4>
+            <h3 id="isLoaded" style="color: red;">&#x25CF; Solver Not Ready</h3>
+        </div>
+    </header>
+
+
+    <br><br>
+    <div class="container">
+        <div class="container-item">
+            <form id="raw-json-input">
+                <textarea id="raw-text" name="input" rows="10"
+                    cols="50">Here's where you can paste a raw graph</textarea>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="display: flex; align-items: center;">
+                        <label for="numGroups" style="margin-right: 10px;">Number of Groups:</label>
+                        <input type="number" id="numGroups" name="numGroups" min="1" max="10" value="6">
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <label for="numMembers" style="margin-right: 10px;">Number of Members per Group:</label>
+                        <input type="number" id="numMembers" name="numMembers" min="1" max="10" value="4">
+                    </div>
+                    <button type="submit" style="font-size: 1.2em; padding: 0.5em 1em;">Submit</button>
+                </div>
+
+            </form>
+        </div>
+        <div class="container-item">
+            <table id="member-table">
+                <tr>
+
+                    <th>People <button onclick="addRow();" id="add-row">Add</button></th>
+                    <th>Past Partners <button onclick="addCol();">Add</button></th>
+                </tr>
+                <tr class="tableInput">
+                    <td><input type="text" name="person" /></td>
+                    <td><input type="text" name="members" /></td>
+                </tr>
+            </table>
+            <button onclick="alert(tableToJson());">Copy to Clipboard</button>
+
+        </div>
+    </div>
+
+    <br><br>
+
+    <div class="container">
+        <div class="container-item">
+
+            <center>
+                <h2>Output</h2>
+                <table id="output-table">
+                    <tr>
+                        <th>Group</th>
+                        <th>Members</th>
+                    </tr>
+                </table>
+            </center>
+
+        </div>
+        <div class="container-item">
+            <h3>Performance Stats</h3>
+            <p>Time: <span id="time">0</span>ms</p>
+            <p>Attempts: <span id="attempts">0</span></p>
+            <p>Backtracks: <span id="backtracks">0</span></p>
+
+        </div>
+    </div>
+
+
+
+
+    <script>
+        const addRow = () => {
+            const table = document.getElementById("member-table");
+            const row = table.insertRow(-1);
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            cell1.innerHTML = '<input type="text" name="person" />';
+            const firstRow = table.rows[1];
+            const numCols = firstRow.cells.length;
+            cell2.innerHTML = '<input type="text" name="members" />';
+            for (let i = 2; i < numCols; i++) {
+                const newCell = row.insertCell(i);
+                newCell.innerHTML = '<input type="text" name="members" />';
+            }
+            row.classList.add("tableInput");
+            table.appendChild(row);
+        }
+        const addCol = () => {
+            const table = document.getElementById("member-table");
+            // for each tr in the element tableInput, append a new td
+            const rows = document.getElementsByClassName("tableInput");
+            for (let i = 0; i < rows.length; i++) {
+                const cell = rows[i].insertCell(-1);
+                cell.innerHTML = '<input type="text" name="members" />';
+            }
+        }
+        const tableToJson = () => {
+            const table = document.getElementById("member-table");
+            const rows = table.rows;
+            const data = [];
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.cells.length === 0) continue;
+                if (row === undefined) continue;
+                const cells = row.cells;
+                const rowData = [];
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    const input = cell.querySelector("input");
+                    if (input.value === "") continue;
+                    rowData.push(input.value);
+                }
+                data.push(rowData);
+            }
+        }
+    </script>
+    <script>
+        const form = document.getElementById("raw-json-input");
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const rawText = document.getElementById("raw-text").value;
+            const numGroups = document.getElementById("numGroups").value;
+            const groupSize = document.getElementById("numMembers").value;
+            let parsedText;
+            try {
+                parsedText = JSON.parse(rawText);
+            } catch (e) {
+                alert("Invalid JSON input");
+                return;
+            }
+
+            if (!parsedText.map) {
+                parsedText = { map: parsedText };
+            }
+            try {
+                const response = await fetch(`/compute/${groupSize}/${numGroups}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "*/*",
+                        "Accept-Encoding": "gzip, deflate"
+                    },
+                    body: JSON.stringify(parsedText)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("attempts").innerText = data.attempts_made;
+                document.getElementById("backtracks").innerText = data.times_backtracked;
+                const table = document.getElementById("output-table");
+                while (table.rows.length > 1) {
+                    table.deleteRow(1);
+                }
+                for (const [key, values] of Object.entries(data.cover)) {
+                    const row = table.insertRow(-1);
+                    const cell1 = row.insertCell(0);
+                    const cell2 = row.insertCell(1);
+                    cell1.textContent = parseInt(key) + 1;
+                    cell2.textContent = values.join(", ");
+                }
+                // alert(JSON.stringify(data));
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            }
+        });
+    </script>
+
+
+
+
+    <script>
+        fetch("/version")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("version").innerText = data.replaceAll('\"', "");
+                document.getElementById("isLoaded").style.color = "green";
+                document.getElementById("isLoaded").innerHTML = "&#x25CF; Solver Ready";
+            });
+    </script>
+
+
+</body>
+
+</html>
