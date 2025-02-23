@@ -6,14 +6,14 @@ impl ExactCover {
     pub fn new(groups: Vec<Vec<usize>>, target_groups_count: usize) -> ExactCover {
         ExactCover {
             solved: false,
-            groups: groups,
+            groups,
             attempts_made: 0 as u64,
             times_backtracked: 0 as u64,
             target_cover: target_groups_count,
         }
     }
 
-    pub fn solve(&mut self, on_billion_attempts: &dyn Fn(u64)) -> Vec<Vec<usize>> {
+    pub fn solve(&mut self, on_billion_attempts: &dyn Fn(u64) -> bool) -> Vec<Vec<usize>> {
         let mut used_students: Vec<bool> =
             vec![false; self.groups.iter().flatten().max().unwrap() + 1];
         let mut sol_v2_vec: Vec<Vec<usize>> = vec![vec![]; self.target_cover];
@@ -36,12 +36,6 @@ impl ExactCover {
         let sol: Vec<Vec<usize>> = sol_v2_vec;
         sol
     }
-    pub fn attempts(&self) -> u64 {
-        self.attempts_made
-    }
-    pub fn backtracks(&self) -> u64 {
-        self.times_backtracked
-    }
 }
 
 fn find_valid_set<'a>(
@@ -52,8 +46,15 @@ fn find_valid_set<'a>(
     attempts_made: &UnsafePointer<u64>,
     times_backtracked: &UnsafePointer<u64>,
     target_groups_count: usize,
-    on_billion_attempts: &dyn Fn(u64),
+    on_billion_attempts: &dyn Fn(u64) -> bool,
 ) -> bool {
+    unsafe {
+        if *attempts_made.ptr % 1_073_741_824 == 0 {
+            if on_billion_attempts(*attempts_made.ptr) {
+                return false;
+            }
+        }
+    }
     if selected_groups.len() == target_groups_count {
         let solution: Vec<Vec<usize>> = selected_groups
             .iter()
@@ -74,9 +75,6 @@ fn find_valid_set<'a>(
     for group in groups {
         unsafe {
             *attempts_made_ref.ptr += 1;
-            if *attempts_made.ptr % 1_000_000 == 0 {
-                on_billion_attempts(*attempts_made.ptr);
-            }
         }
 
         if group

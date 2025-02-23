@@ -1,19 +1,19 @@
-use crate::colors::{CLEAR, CLEAR_CONSOLE, GREEN};
+use crate::colors::CLEAR;
 use crate::version::VERSION;
 use axum::response::Html;
 use axum::{
-    Router,
-    extract::{Json, Path, Query},
+    extract::{Json, Path},
     response::IntoResponse,
     routing::{get, post},
+    Router,
 };
-use serde::{Deserialize, Serialize};
-use std::{net::SocketAddr, sync::Arc};
+use flow::{cover_to_json, on_billion_attempts, on_startup};
 use tokio::task;
-use types::{ExactCover, InputData, OutputData, QueryInfo};
+use types::{ExactCover, InputData, OutputData};
 
 mod colors;
 mod exact_cover;
+mod flow;
 mod permutations;
 mod types;
 mod version;
@@ -25,18 +25,16 @@ async fn cover_handler(
 ) -> impl IntoResponse {
     println!("{CLEAR}Computing cover for group size {group_size} and {num_groups} groups");
     let start_time = std::time::Instant::now();
-    let (usize_map, string_to_usize, usize_to_string) =
+    let (usize_map, _, usize_to_string) =
         permutations::create_usize_map(&payload.map);
     let permutations: Vec<Vec<usize>> =
         permutations::find_valid_permutations(&usize_map, group_size as usize);
     let mut cover = ExactCover::new(permutations, num_groups as usize);
+
+    
     let result: (Vec<Vec<usize>>, u64, u64) = task::spawn_blocking(move || {
         (
-            cover.solve(&|attempts| {
-                if attempts % 1_073_741_824 == 0 {
-                    println!("{} billion attempts made", attempts / 1_000_000_000);
-                }
-            }),
+            cover.solve(&on_billion_attempts),
             cover.attempts_made,
             cover.times_backtracked,
         )
@@ -44,27 +42,8 @@ async fn cover_handler(
     .await
     .unwrap();
     let end_time = std::time::Instant::now();
-    println!(
-        "{CLEAR}Cover computed in {} seconds, with {} attempts made and {} times backtracked",
-        (end_time - start_time).as_secs_f32(),
-        result.1,
-        result.2
-    );
 
-    let mut output = vec![];
-    for group in result.0 {
-        let mut group_str = vec![];
-        for student in group {
-            group_str.push(usize_to_string.get(&student).unwrap().clone());
-        }
-        output.push(group_str);
-    }
-    let output = OutputData {
-        cover: output,
-        attempts_made: result.1,
-        times_backtracked: result.2,
-    };
-    Json(output)
+    cover_to_json(result.0, result.1, result.2, usize_to_string)
 }
 
 async fn version_route() -> impl IntoResponse {
@@ -77,13 +56,11 @@ async fn index() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
+    let port = 3000;
     let app: Router = Router::new()
         .route("/compute/{group_size}/{num_groups}", post(cover_handler))
         .route("/version", get(version_route))
         .route("/", get(index));
-    println!("{CLEAR_CONSOLE}{GREEN}Group Organizer {VERSION} ready!{CLEAR}");
-    let listener: tokio::net::TcpListener =
-        tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    webbrowser::open(format!("{}{}", "http://localhost:", 3000).as_str()).unwrap();
+    let listener: tokio::net::TcpListener = on_startup(port).await;
     axum::serve(listener, app).await.unwrap();
 }

@@ -244,8 +244,8 @@
                 }
 
                 const data = await response.json();
-                document.getElementById("attempts").innerText = data.attempts_made;
-                document.getElementById("backtracks").innerText = data.times_backtracked;
+                document.getElementById("attempts").innerText = data.attempts_made.toLocaleString();
+                document.getElementById("backtracks").innerText = data.times_backtracked.toLocaleString();
                 const table = document.getElementById("output-table");
                 while (table.rows.length > 1) {
                     table.deleteRow(1);

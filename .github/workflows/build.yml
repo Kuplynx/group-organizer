@@ -1,18 +1,32 @@
-name: Build
+name: Build and Release for Windows
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+  push:
+    tags:
+      - "v*.*.*" 
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
-          - uses: actions-rust-lang/setup-rust-toolchain@v1
-          - run: rustup target add x86_64-pc-windows-msvc
-          - run: cargo build --release --target x86_64-pc-windows-msvc
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build for Windows
+        run: cross build --release --target x86_64-pc-windows-gnu
+
+      - name: Prepare artifact
+        run: mv target/x86_64-pc-windows-gnu/release/group-organizer.exe ./  # Replace with your actual binary name
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: group-organizer.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
