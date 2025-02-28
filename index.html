@@ -115,6 +115,8 @@
                         <input type="number" id="numMembers" name="numMembers" min="1" max="10" value="4">
                     </div>
                     <button type="submit" style="font-size: 1.2em; padding: 0.5em 1em;">Submit</button>
+                    <button style="font-size: 1.2em; padding: 0.5em 1em;" id="populate-table" type="button">Populate
+                        Table</button>
                 </div>
 
             </form>
@@ -165,6 +167,63 @@
 
 
     <script>
+        document.getElementById("populate-table").addEventListener("click", () => {
+            const table = document.getElementById("member-table");
+            // get content of form input
+            const rawText = document.getElementById("raw-text").value;
+            let parsedText;
+            try {
+                parsedText = JSON.parse(rawText);
+            } catch (e) {
+                alert("Invalid JSON input");
+                return;
+            }
+            if (!parsedText.map) {
+                parsedText = { map: parsedText };
+            }
+            const data = parsedText.map;
+            const people = Object.keys(data);
+            const firstRow = table.rows[0];
+            const numCols = firstRow.cells.length;
+            // find the most number of partners
+            let maxPartners = 0;
+            for (const [key, value] of Object.entries(data)) {
+                if (value.length > maxPartners) {
+                    maxPartners = value.length;
+                }
+            }
+            // add columns to the table
+            for (let i = 2; i <= maxPartners; i++) {
+                addCol();
+            }
+            // find the number of rows
+            const numRows = people.length;
+            // add rows to the table
+            for (let i = 1; i < numRows; i++) {
+                addRow();
+            }
+
+
+            // populate the table
+            for (let i = 0; i < numRows; i++) {
+                const row = table.rows[i + 1];
+                const cell1 = row.cells[0];
+                cell1.innerHTML = '<input type="text" name="person" value="' + people[i] + '" />';
+                const people = data[people[i]];
+                alert(people);
+                // for (let j = 1; j < people.length + 1; j++) {
+                //     const cell = row.cells[j];
+                //     cell.innerHTML = '<input type="text" name="members" value="' + people[j - 1] + '" />';
+                // }
+                // for (let j = 0; j < people.length; j++) {
+                    // const cell = row.cells[j + 1];
+                    // cell.innerHTML = '<input type="text" name="members" value="' + people[j] + '" />';
+                // }
+               
+            }
+
+
+        });
         const addRow = () => {
             const table = document.getElementById("member-table");
             const row = table.insertRow(-1);

@@ -23,6 +23,38 @@ async fn cover_handler(
     Path((group_size, num_groups)): Path<(u32, u32)>,
     Json(payload): Json<InputData>,
 ) -> impl IntoResponse {
+    // validate input
+    if group_size == 0 || num_groups == 0 {
+        return Json(OutputData {
+            cover: vec![],
+            attempts_made: 0,
+            times_backtracked: 0,
+        });
+    }
+    // if group size is larger than the number of students, return an empty cover
+    if group_size as usize > payload.map.len() {
+        return Json(OutputData {
+            cover: vec![],
+            attempts_made: 0,
+            times_backtracked: 0,
+        });
+    }
+    // if the number of groups is larger than the number of students, return an empty cover
+    if num_groups as usize > payload.map.len() {
+        return Json(OutputData {
+            cover: vec![],
+            attempts_made: 0,
+            times_backtracked: 0,
+        });
+    }
+    // if group size * number of groups is larger than the number of students, return an empty cover
+    if group_size as usize * num_groups as usize > payload.map.len() {
+        return Json(OutputData {
+            cover: vec![],
+            attempts_made: 0,
+            times_backtracked: 0,
+        });
+    }
     println!("{CLEAR}Computing cover for group size {group_size} and {num_groups} groups");
     let start_time = std::time::Instant::now();
     let (usize_map, string_to_usize, usize_to_string) =
@@ -74,6 +106,7 @@ async fn version_route() -> impl IntoResponse {
 async fn index() -> impl IntoResponse {
     Html(include_str!("../index.html"))
 }
+
 
 #[tokio::main]
 async fn main() {
