@@ -43,11 +43,12 @@ pub(crate) struct InputData {
     pub map: HashMap<String, Vec<String>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub(crate) struct OutputData {
     pub cover: Vec<Vec<String>>,
     pub attempts_made: u64,
     pub times_backtracked: u64,
+    pub time_taken_secs: f64,
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]

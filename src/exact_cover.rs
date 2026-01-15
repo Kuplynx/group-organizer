@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 
 use crate::types::{ExactCover, UnsafePointer};
 
+const MAX_ATTEMPTS: u64 = 1 << 36; // ~68 billion (a little over a minute on my M4 macbook pro)
+
 impl ExactCover {
     pub fn new(groups: Vec<Vec<usize>>, target_groups_count: usize) -> ExactCover {
         ExactCover {
@@ -13,7 +15,7 @@ impl ExactCover {
         }
     }
 
-    pub fn solve(&mut self, on_billion_attempts: &dyn Fn(u64)) -> Vec<Vec<usize>> {
+    pub fn solve(&mut self) -> Vec<Vec<usize>> {
         let mut used_students: Vec<bool> =
             vec![false; self.groups.iter().flatten().max().unwrap() + 1];
         let mut sol_v2_vec: Vec<Vec<usize>> = vec![vec![]; self.target_cover];
@@ -31,15 +33,14 @@ impl ExactCover {
                 ptr: &mut self.times_backtracked as *mut u64,
             },
             self.target_cover,
-            on_billion_attempts,
         );
         let sol: Vec<Vec<usize>> = sol_v2_vec;
         sol
     }
-    pub fn attempts(&self) -> u64 {
+    pub fn _attempts(&self) -> u64 {
         self.attempts_made
     }
-    pub fn backtracks(&self) -> u64 {
+    pub fn _backtracks(&self) -> u64 {
         self.times_backtracked
     }
 }
@@ -52,7 +53,6 @@ fn find_valid_set<'a>(
     attempts_made: &UnsafePointer<u64>,
     times_backtracked: &UnsafePointer<u64>,
     target_groups_count: usize,
-    on_billion_attempts: &dyn Fn(u64),
 ) -> bool {
     if selected_groups.len() == target_groups_count {
         let solution: Vec<Vec<usize>> = selected_groups
@@ -74,8 +74,8 @@ fn find_valid_set<'a>(
     for group in groups {
         unsafe {
             *attempts_made_ref.ptr += 1;
-            if *attempts_made.ptr % 1_000_000 == 0 {
-                on_billion_attempts(*attempts_made.ptr);
+            if *attempts_made_ref.ptr >= MAX_ATTEMPTS {
+                return false;
             }
         }
 
@@ -101,7 +101,6 @@ fn find_valid_set<'a>(
             attempts_made_ref,
             times_backtracked_ref,
             target_groups_count,
-            on_billion_attempts,
         );
 
         if result {

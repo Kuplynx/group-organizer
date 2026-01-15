@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 axum = { version = "0.8.1", features = ["macros"] }
+axum-extra = "0.12.5"
 axum-macros = "0.5.0"
 itertools = "0.14.0"
 serde = {version = "1.0.218", features = ["derive"]}
