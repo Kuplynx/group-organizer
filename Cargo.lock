@@ -218,8 +218,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "group-organizer-app"
-version = "0.1.0"
+name = "group-organizer"
+version = "2.15.0"
 dependencies = [
  "axum",
  "axum-extra",
