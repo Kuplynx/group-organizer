@@ -21,7 +21,7 @@ jobs:
           with:
               executable-name: group-organizer
               target:  x86_64-pc-windows-gnu
-              args: "--release"
+              args: "--release --locked"
               strip: true
 
         - name: Release
