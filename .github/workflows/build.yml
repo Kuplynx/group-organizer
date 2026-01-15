@@ -20,7 +20,7 @@ jobs:
           uses: houseabsolute/actions-rust-cross@v0
           with:
               executable-name: group-organizer
-              target:  x86_64-pc-windows-msvc
+              target:  x86_64-pc-windows-gnu
               args: "--release"
               strip: true
 
@@ -28,4 +28,4 @@ jobs:
           uses: houseabsolute/actions-rust-release@v0
           with:
             executable-name: group-organizer
-            target: x86_64-pc-windows-msvc
+            target: x86_64-pc-windows-gnu
