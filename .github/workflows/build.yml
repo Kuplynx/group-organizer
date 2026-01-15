@@ -13,8 +13,19 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - name: Publish artifacts and release
+        - name: Checkout
+          uses: actions/checkout@v3
+          
+        - name: Build executible
+          uses: houseabsolute/actions-rust-cross@v0
+          with:
+              executable-name: group-organizer
+              target:  x86_64-pc-windows-msvc
+              args: "--release"
+              strip: true
+
+        - name: Release
           uses: houseabsolute/actions-rust-release@v0
           with:
-              executable-name: group-organizer-app
-              target:  x86_64-pc-windows-msvc
+            executable-name: group-organizer
+            target: x86_64-pc-windows-msvc
