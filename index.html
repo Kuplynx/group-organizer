@@ -8,8 +8,8 @@
     <script src="tailwind.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen p-4 md:p-8">
-    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden">
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 flex flex-col">
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl overflow-hidden min-w-[65%]">
 
         <div class="bg-indigo-600 p-6 text-white">
             <h1 class="text-2xl font-bold" id="mainTitle">Group Organizer</h1>
@@ -40,32 +40,64 @@
             <section>
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Student Roster</h2>
-                    <button onclick="addStudent()"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
-                        + Add Student
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="showResetPartnersModal()"
+                            class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                            Reset Partners
+                        </button>
+                        <button onclick="showEraseModal()"
+                            class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                            Erase All
+                        </button>
+                        <button onclick="addStudent()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                            + Add Student
+                        </button>
+                    </div>
                 </div>
 
                 <div id="rosterContainer" class="space-y-4">
                 </div>
             </section>
 
-            <section class="border-t pt-6 flex flex-wrap gap-3">
+        </div>
+    </div>
+
+    <footer
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.1)] p-4 z-40">
+        <div class="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex gap-2">
                 <button onclick="downloadJSON()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
+                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
                     Download History (.json)
                 </button>
-                <label class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded cursor-pointer shadow">
+
+                <label
+                    class="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold cursor-pointer transition border border-gray-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
                     Upload History
                     <input type="file" id="uploadInput" class="hidden" accept=".json" onchange="uploadJSON(event)">
                 </label>
-                <button onclick="submitToAPI()"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow ml-auto">
-                    Compute Groups →
-                </button>
-            </section>
+            </div>
+
+            <button onclick="submitToAPI()"
+                class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg text-base font-bold shadow-lg transition transform active:scale-95">
+                Compute Groups
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </button>
         </div>
-    </div>
+    </footer>
+
     <div id="groupModal"
         class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col">
@@ -150,6 +182,80 @@
         </div>
     </div>
 
+    <div id="eraseModal"
+        class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-[80]">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="bg-orange-50 p-6 flex flex-col items-center">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-bold text-gray-900">Clear Everything?</h2>
+                <p class="text-sm text-gray-600 text-center mt-2">
+                    This will delete all students and their entire partner history. This action is permanent.
+                </p>
+            </div>
+            <div class="p-4 bg-gray-50 flex gap-3">
+                <button onclick="closeEraseModal()"
+                    class="flex-1 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium">
+                    Cancel
+                </button>
+                <button onclick="confirmEraseAll()"
+                    class="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                    Yes, Delete All
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="resetPartnersModal"
+        class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-[90]">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="bg-amber-50 p-6 flex flex-col items-center">
+                <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
+                <h2 class="text-lg font-bold text-gray-900">Reset Partner History?</h2>
+                <p class="text-sm text-gray-600 text-center mt-2">
+                    This will keep all student names but **clear all past partner connections**. This is great for
+                    starting a new semester.
+                </p>
+            </div>
+            <div class="p-4 bg-gray-50 flex gap-3">
+                <button onclick="closeResetPartnersModal()"
+                    class="flex-1 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium">
+                    Cancel
+                </button>
+                <button onclick="confirmResetPartners()"
+                    class="flex-1 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition font-medium">
+                    Clear History
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="addStudentModal"
+        class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-[100]">
+        <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">Add New Student</h2>
+                <input type="text" id="newStudentName"
+                    class="w-full p-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition-colors"
+                    placeholder="Type name here..." onkeydown="handleStudentEntry(event)">
+                <p class="text-xs text-gray-400 mt-2 italic">Press Enter to save</p>
+            </div>
+            <div class="p-4 bg-gray-50 flex gap-3">
+                <button onclick="closeAddModal()" class="flex-1 py-2 text-gray-600 font-semibold">Cancel</button>
+                <button onclick="saveStudent()"
+                    class="flex-1 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700">Add
+                    Student</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // fetch API version from "/version"
         fetch('/version')
@@ -166,13 +272,44 @@
 
         // 1. Core Logic: Add Student
         function addStudent() {
-            const name = prompt("Enter student name:");
-            if (name && !students[name]) {
-                students[name] = [];
-                render();
-            }
+            const modal = document.getElementById('addStudentModal');
+            const input = document.getElementById('newStudentName');
+            input.value = '';
+            modal.classList.remove('hidden');
+            input.focus();
         }
 
+        function closeAddModal() {
+            document.getElementById('addStudentModal').classList.add('hidden');
+        }
+
+        function saveStudent() {
+            const input = document.getElementById('newStudentName');
+            const name = input.value.trim();
+
+            if (!name) return; // Don't add empty names
+
+            if (students[name]) {
+                showError("This student is already in the roster!");
+                return;
+            }
+
+            students[name] = [];
+            render();
+            closeAddModal();
+        }
+
+        // 3. The "Enter" Key Listener
+        function handleStudentEntry(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent accidental form submissions
+                saveStudent();
+            }
+            // Allow Escape key to close
+            if (event.key === "Escape") {
+                closeAddModal();
+            }
+        }
         // 2. Core Logic: Manage Partners (Auto-filling gaps)
         function togglePartner(studentName, partnerName) {
             if (studentName === partnerName) return;
@@ -311,8 +448,11 @@
                     showError("No valid groups could be formed with the current constraints. Please adjust group size or number of groups.");
                     return;
                 }
-                else if (result.attempts_made >= (2 ** 36)) {
+                else if (result.attempts_made >= (2 ** 37)) {
                     showError(`Computation exceeded maximum allowed attempts (${result.attempts_made.toLocaleString()}). Please try different group settings.\n\nIf partners are not restrictive, then try again as it will likely find a solution. If this keeps happening, consider starting over as people may have too many past group members.`);
+                    return;
+                } else if (result.cover.length === 0) {
+                    showError("All possible group combinations have been exhausted without finding a valid set. Please adjust group size or number of groups, or consider starting new.");
                     return;
                 }
                 console.log("Groups Generated:", result);
@@ -347,8 +487,8 @@
             const modal = document.getElementById('groupModal');
             const content = document.getElementById('modalContent');
             const attempts_per_second = ((attempts / time) / 1_000_000).toFixed(0);
-            document.getElementById('statBacktracks').innerText = backtracks;
-            document.getElementById('statAttempts').innerText = `${(attempts / 1_000_000).toFixed(2)}M (${attempts_per_second}M /sec)`;
+            document.getElementById('statBacktracks').innerText = backtracks.toLocaleString();
+            document.getElementById('statAttempts').innerText = `${(attempts / 1_000_000).toFixed(2).toLocaleString()}M (${attempts_per_second.toLocaleString()}M /sec)`;
             document.getElementById('statTime').innerText = Number(time).toFixed(3);
             content.innerHTML = '';
 
@@ -395,6 +535,52 @@
             downloadJSON();
 
             showInfo("Success", "History updated and file downloaded!\nSave this file for future use and ensure it is the latest version.");
+        }
+
+        function showEraseModal() {
+            document.getElementById('eraseModal').classList.remove('hidden');
+        }
+
+        function closeEraseModal() {
+            document.getElementById('eraseModal').classList.add('hidden');
+        }
+
+        function confirmEraseAll() {
+            // 1. Wipe the state
+            students = {};
+
+            // 2. Update the UI
+            render();
+
+            // 3. Close modal
+            closeEraseModal();
+
+            // 4. Show success info
+            showInfo("Reset Complete", "The student roster and history have been cleared.");
+        }
+
+        function showResetPartnersModal() {
+            document.getElementById('resetPartnersModal').classList.remove('hidden');
+        }
+
+        function closeResetPartnersModal() {
+            document.getElementById('resetPartnersModal').classList.add('hidden');
+        }
+
+        function confirmResetPartners() {
+            // 1. Clear arrays but keep the keys (names)
+            Object.keys(students).forEach(name => {
+                students[name] = [];
+            });
+
+            // 2. Update the UI
+            render();
+
+            // 3. Close modal
+            closeResetPartnersModal();
+
+            // 4. Show success info
+            showInfo("History Reset", "All student names were kept, but their partner history has been wiped clean.");
         }
     </script>
 </body>
