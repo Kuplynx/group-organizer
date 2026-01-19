@@ -16,6 +16,7 @@ mod exact_cover;
 mod permutations;
 mod types;
 mod version;
+mod dlx;
 
 #[axum::debug_handler]
 async fn cover_handler(

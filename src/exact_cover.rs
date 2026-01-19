@@ -1,5 +1,6 @@
 use std::{collections::VecDeque, vec};
 
+use crate::dlx::solve_exact_cover;
 use crate::types::{ExactCover, UnsafePointer};
 
 const MAX_ATTEMPTS: u64 = 1 << 37; // ~137 billion (a little over a minute on my M4 macbook pro)
@@ -21,37 +22,51 @@ impl ExactCover {
         // let mut sol_v2_vec: Vec<Vec<usize>> = vec![vec![]; self.target_cover];
         // let mut selected_groups: VecDeque<&[usize]> = VecDeque::new();
         // let groups: &Vec<Vec<usize>> = &self.groups;
-        let group_masks: Vec<u128> = self
-            .groups
-            .iter()
-            .map(|group| {
-                group
-                    .iter()
-                    .fold(0u128, |mask, &student| mask | (1 << student))
-            })
-            .collect();
-        let mut selected_indices = Vec::with_capacity(self.target_cover);
-        let initial_mask: u128 = 0;
-        let start_index = 0;
-        if find_valid_set_bitmasked(
-            &group_masks,
-            initial_mask,
-            start_index,
-            &mut selected_indices,
+        // let group_masks: Vec<u128> = self
+        //     .groups
+        //     .iter()
+        //     .map(|group| {
+        //         group
+        //             .iter()
+        //             .fold(0u128, |mask, &student| mask | (1 << student))
+        //     })
+        //     .collect();
+        // let mut selected_indices = Vec::with_capacity(self.target_cover);
+        // let initial_mask: u128 = 0;
+        // let start_index = 0;
+        // if find_valid_set_bitmasked(
+        //     &group_masks,
+        //     initial_mask,
+        //     start_index,
+        //     &mut selected_indices,
+        //     self.target_cover,
+        //     &UnsafePointer {
+        //         ptr: &mut self.attempts_made as *mut u64,
+        //     },
+        //     &UnsafePointer {
+        //         ptr: &mut self.times_backtracked as *mut u64,
+        //     },
+        // ) {
+        //     // 4. Convert indices back to the original groups for the result
+        //     let result = selected_indices
+        //         .into_iter()
+        //         .map(|i| self.groups[i].clone())
+        //         .collect();
+        //     return Some(result).unwrap();
+        // }
+        println!(
+            "{}Brute force method failed after {} attempts and {} backtracks, \
+                  trying DLX algorithm as a fallback.{}",
+            crate::colors::RED, self.attempts_made, self.times_backtracked, crate::colors::RESET
+        );
+
+        // try DLX as a fallback
+        if let Some(solution) = solve_exact_cover(
+            &self.groups,
+            self.groups.iter().flatten().max().unwrap() + 1,
             self.target_cover,
-            &UnsafePointer {
-                ptr: &mut self.attempts_made as *mut u64,
-            },
-            &UnsafePointer {
-                ptr: &mut self.times_backtracked as *mut u64,
-            },
         ) {
-            // 4. Convert indices back to the original groups for the result
-            let result = selected_indices
-                .into_iter()
-                .map(|i| self.groups[i].clone())
-                .collect();
-            return Some(result).unwrap();
+            return solution;
         }
 
         vec![]
@@ -162,7 +177,7 @@ fn find_valid_set_bitmasked(
     selected_indices: &mut Vec<usize>,
     target_count: usize,
     attempts_made_ref: &UnsafePointer<u64>,
-    times_backtracked_ref: &UnsafePointer<u64>
+    times_backtracked_ref: &UnsafePointer<u64>,
 ) -> bool {
     // Base Case
     if selected_indices.len() == target_count {

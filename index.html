@@ -105,11 +105,11 @@
                 <h2 class="text-xl font-bold text-gray-800">Proposed Groups</h2>
                 <div
                     class="grid grid-cols-3 gap-2 mt-3 py-2 px-3 bg-gray-50 rounded-lg border border-gray-100 text-center">
-                    <div>
+                    <div id="backtracksDiv">
                         <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Backtracks</p>
                         <p id="statBacktracks" class="text-lg font-mono font-bold text-indigo-600">0</p>
                     </div>
-                    <div>
+                    <div id="attemptsDiv">
                         <p class="text-[10px] uppercase tracking-wider text-gray-500 font-bold">Attempts (Million)</p>
                         <p id="statAttempts" class="text-lg font-mono font-bold text-indigo-600">0</p>
                     </div>
@@ -444,18 +444,17 @@
                 document.getElementById('infoModalButton').style.display = 'block';
                 document.getElementById("infoModalButton").disabled = false;
                 console.log(result);
-                if (result.attempts_made === 0) {
+                if (result.attempts_made === 0 && result.cover.length === 0) {
                     showError("No valid groups could be formed with the current constraints. Please adjust group size or number of groups.");
                     return;
                 }
-                else if (result.attempts_made >= (2 ** 37)) {
-                    showError(`Computation exceeded maximum allowed attempts (${result.attempts_made.toLocaleString()}). Please try different group settings.\n\nIf partners are not restrictive, then try again as it will likely find a solution. If this keeps happening, consider starting over as people may have too many past group members.`);
+                else if ((result.attempts_made >= (2 ** 37)) && result.cover.length === 0) {
+                    showError(`Computation exceeded maximum allowed attempts (${result.attempts_made.toLocaleString()}). Please try different group settings.\n\nIf partners are not restrictive, then try again as it may find a solution. If this keeps happening, consider starting over as people may have too many past group members.`);
                     return;
                 } else if (result.cover.length === 0) {
                     showError("All possible group combinations have been exhausted without finding a valid set. Please adjust group size or number of groups, or consider starting new.");
                     return;
                 }
-                console.log("Groups Generated:", result);
                 lastPendingGroups = result.cover;
                 showModal(lastPendingGroups, result.attempts_made, result.times_backtracked, result.time_taken_secs);
                 // alert("Groups computed! Check console for results.");
@@ -487,8 +486,20 @@
             const modal = document.getElementById('groupModal');
             const content = document.getElementById('modalContent');
             const attempts_per_second = ((attempts / time) / 1_000_000).toFixed(0);
-            document.getElementById('statBacktracks').innerText = backtracks.toLocaleString();
-            document.getElementById('statAttempts').innerText = `${(attempts / 1_000_000).toFixed(2).toLocaleString()}M (${attempts_per_second.toLocaleString()}M /sec)`;
+            if (attempts === 0) {
+                document.getElementById('statAttempts').innerText = 'N/A';
+                document.getElementById('attemptsDiv').classList.add('hidden');
+            } else {
+                document.getElementById('statAttempts').innerText = `${(attempts / 1_000_000).toLocaleString()}M (${attempts_per_second.toLocaleString()}M /sec)`;
+                document.getElementById('attemptsDiv').classList.remove('hidden');
+            }
+            if (backtracks === 0) {
+                document.getElementById('statBacktracks').innerText = 'N/A';
+                document.getElementById('backtracksDiv').classList.add('hidden');
+            } else {
+                document.getElementById('statBacktracks').innerText = backtracks.toLocaleString();
+                document.getElementById('backtracksDiv').classList.remove('hidden');
+            }
             document.getElementById('statTime').innerText = Number(time).toFixed(3);
             content.innerHTML = '';
 
