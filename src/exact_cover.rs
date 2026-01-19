@@ -54,6 +54,12 @@ impl ExactCover {
         //         .collect();
         //     return Some(result).unwrap();
         // }
+
+        // if there are no groups, return empty vec
+        if self.groups.is_empty() {
+            return vec![];
+        }
+
         println!(
             "{}Brute force method failed after {} attempts and {} backtracks, \
                   trying DLX algorithm as a fallback.{}",

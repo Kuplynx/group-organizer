@@ -1,22 +1,22 @@
 use crate::colors::{CLEAR, CLEAR_CONSOLE, GREEN};
 use crate::version::VERSION;
 use axum::response::Html;
-use axum_extra::response::JavaScript;
 use axum::{
     Router,
     extract::{Json, Path},
     response::IntoResponse,
     routing::{get, post},
 };
+use axum_extra::response::JavaScript;
 use tokio::task;
 use types::{ExactCover, InputData, OutputData};
 
 mod colors;
+mod dlx;
 mod exact_cover;
 mod permutations;
 mod types;
 mod version;
-mod dlx;
 
 #[axum::debug_handler]
 async fn cover_handler(
@@ -66,15 +66,10 @@ async fn cover_handler(
     let permutations: Vec<Vec<usize>> =
         permutations::find_valid_permutations(&usize_map, group_size as usize);
     let mut cover = ExactCover::new(permutations, num_groups as usize);
-    let result: (Vec<Vec<usize>>, u64, u64) = task::spawn_blocking(move || {
-        (
-            cover.solve(),
-            cover.attempts_made,
-            cover.times_backtracked,
-        )
-    })
-    .await
-    .unwrap();
+    let result: (Vec<Vec<usize>>, u64, u64) =
+        task::spawn_blocking(move || (cover.solve(), cover.attempts_made, cover.times_backtracked))
+            .await
+            .unwrap();
     let end_time = std::time::Instant::now();
     println!(
         "{CLEAR}Cover computed in {} seconds, with {} attempts made and {} times backtracked",
@@ -113,7 +108,6 @@ async fn tailwind_route() -> impl IntoResponse {
     JavaScript(include_str!("../tailwind.js"))
 }
 
-
 #[tokio::main]
 async fn main() {
     let app: Router = Router::new()
@@ -121,7 +115,9 @@ async fn main() {
         .route("/version", get(version_route))
         .route("/tailwind.js", get(tailwind_route))
         .route("/", get(index));
-    println!("{CLEAR_CONSOLE}{GREEN}Group Organizer {VERSION} ready!{CLEAR}");
+    println!(
+        "{CLEAR_CONSOLE}{GREEN}Group Organizer {VERSION} ready!{CLEAR}\nYou may minimize this terminal window, but do not close it while using the application.\nFind the web interface at http://localhost:3651\n"
+    );
     let listener: tokio::net::TcpListener =
         tokio::net::TcpListener::bind("0.0.0.0:3651").await.unwrap();
     webbrowser::open(format!("{}{}", "http://localhost:", 3651).as_str()).unwrap();
